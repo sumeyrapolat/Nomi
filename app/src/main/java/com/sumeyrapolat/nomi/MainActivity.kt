@@ -6,15 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.sumeyrapolat.nomi.presentation.components.*
 import com.sumeyrapolat.nomi.ui.theme.NomiTheme
 
 class MainActivity : ComponentActivity() {
@@ -24,8 +23,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             NomiTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ThemePreviewContent(
-                        modifier = Modifier.padding(innerPadding)
+                    DummySwipeTestScreen(
+                        modifier = Modifier
+                            .padding(innerPadding)
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
                     )
                 }
             }
@@ -34,76 +36,62 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ThemePreviewContent(modifier: Modifier = Modifier) {
+fun DummySwipeTestScreen(modifier: Modifier = Modifier) {
+    var showEditSheet by remember { mutableStateOf(false) }
+    var showDeleteSheet by remember { mutableStateOf(false) }
+
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier.padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Typography test
-        Text(
-            text = "Headline / Title Large",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = "Body Medium - Regular text example",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onBackground
+        SwipeableContactRow(
+            name = "Alice 2",
+            phoneNumber = "+1234567890",
+            onEditClick = { showEditSheet = true },
+            onDeleteClick = { showDeleteSheet = true }
         )
 
-        // Button color test
-        Button(onClick = {}) {
-            Text("Primary Button", style = MaterialTheme.typography.bodyMedium)
-        }
+        SwipeableContactRow(
+            name = "Benjamin",
+            phoneNumber = "+905551112233",
+            onEditClick = { showEditSheet = true },
+            onDeleteClick = { showDeleteSheet = true }
+        )
 
-        // Success color test
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .background(MaterialTheme.colorScheme.tertiary),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Success Color",
-                color = MaterialTheme.colorScheme.onPrimary,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-
-        // Error color test
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(48.dp)
-                .background(MaterialTheme.colorScheme.error),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Error Color",
-                color = MaterialTheme.colorScheme.onError,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
+        SwipeableContactRow(
+            name = "Clara",
+            phoneNumber = "+905556667788",
+            onEditClick = { showEditSheet = true },
+            onDeleteClick = { showDeleteSheet = true }
+        )
     }
+
+    // ✨ Edit Bottom Sheet (AddNewContact)
+    AddNewContactBottomSheet(
+        isVisible = showEditSheet,
+        onDismiss = { showEditSheet = false },
+        onSave = { first, last, phone ->
+            println("Saved contact: $first $last ($phone)")
+            showEditSheet = false
+        }
+    )
+
+    // 🗑 Delete Bottom Sheet
+    DeleteContactBottomSheet(
+        isVisible = showDeleteSheet,
+        onDismiss = { showDeleteSheet = false },
+        onConfirm = {
+            println("Contact deleted")
+            showDeleteSheet = false
+        }
+    )
 }
 
-@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, widthDp = 360, heightDp = 800, name = "BottomSheet Swipe Preview")
 @Composable
-fun LightThemePreview() {
-    NomiTheme(darkTheme = false) {
-        ThemePreviewContent()
-    }
-}
-
-@Preview(showBackground = true, name = "Dark Mode")
-@Composable
-fun DarkThemePreview() {
-    NomiTheme(darkTheme = true) {
-        ThemePreviewContent()
+fun DummySwipeTestPreview() {
+    NomiTheme {
+        DummySwipeTestScreen()
     }
 }

@@ -1,3 +1,46 @@
 <resources>
+    <!-- General -->
     <string name="app_name">Nomi</string>
+
+    <!-- Contacts Screen -->
+    <string name="contacts_title">Contacts</string>
+    <string name="contacts_search_hint">Search by name</string>
+    <string name="contacts_no_contacts_title">No Contacts</string>
+    <string name="contacts_no_contacts_subtitle">Contacts you\'ve added will appear here.</string>
+    <string name="contacts_create_new">Create New Contact</string>
+
+    <!-- Add / Edit Contact -->
+    <string name="add_contact_title">New Contact</string>
+    <string name="edit_contact_title">Edit Contact</string>
+    <string name="contact_field_first_name">First Name</string>
+    <string name="contact_field_last_name">Last Name</string>
+    <string name="contact_field_phone">Phone Number</string>
+    <string name="contact_add_photo">Add Photo</string>
+    <string name="contact_change_photo">Change Photo</string>
+    <string name="contact_done">Done</string>
+    <string name="contact_cancel">Cancel</string>
+
+    <!-- Empty / Success States -->
+    <string name="contact_saved_message">New contact saved 🎉</string>
+    <string name="contact_updated_message">User is updated!</string>
+    <string name="contact_deleted_message">User is deleted!</string>
+
+    <string name="contacts_no_results_title">No Results</string>
+    <string name="contacts_no_results_subtitle">The user you are looking for could not be found.</string>
+
+    <string name="dialog_delete_contact_title">Delete Contact</string>
+    <string name="dialog_delete_contact_message">Are you sure you want to delete this contact?</string>
+    <string name="dialog_button_yes">Yes</string>
+    <string name="dialog_button_no">No</string>
+
+    <!-- Add New Contact -->
+    <string name="contact_new_title">New Contact</string>
+    <string name="contact_first_name">First Name</string>
+    <string name="contact_last_name">Last Name</string>
+    <string name="contact_phone_number">Phone Number</string>
+
+    <string name="photo_picker_camera">Camera</string>
+    <string name="photo_picker_gallery">Gallery</string>
+    <string name="cancel">Cancel</string>
+
 </resources>

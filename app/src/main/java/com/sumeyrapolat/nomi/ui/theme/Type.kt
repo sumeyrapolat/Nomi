@@ -35,7 +35,7 @@ val Typography = Typography(
     ),
     titleMedium = TextStyle(
         fontFamily = Mulish,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Bold, // <-- SemiBold yerine Bold yaptık
         fontSize = 16.sp,
         lineHeight = 22.sp
     ),
