@@ -1,14 +1,13 @@
 package com.sumeyrapolat.nomi.presentation.contacts
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sumeyrapolat.nomi.domain.model.Contact
 import com.sumeyrapolat.nomi.domain.usecase.AddContactUseCase
 import com.sumeyrapolat.nomi.domain.usecase.DeleteContactUseCase
 import com.sumeyrapolat.nomi.domain.usecase.GetContactsUseCase
+import com.sumeyrapolat.nomi.domain.usecase.UpdateContactUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,20 +20,24 @@ import javax.inject.Inject
 class ContactsViewModel @Inject constructor(
     private val getContactsUseCase: GetContactsUseCase,
     private val addContactUseCase: AddContactUseCase,
-    private val deleteContactUseCase: DeleteContactUseCase
+    private val deleteContactUseCase: DeleteContactUseCase,
+    private val updateContactUseCase: UpdateContactUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ContactsUiState())
     val uiState = _uiState.asStateFlow()
 
+    // 👇 Event yönlendirmesi
     fun onEvent(event: ContactEvent) {
         when (event) {
             is ContactEvent.LoadContacts -> loadContacts()
             is ContactEvent.AddContact -> addContact(event.firstName, event.lastName, event.phone)
             is ContactEvent.DeleteContact -> deleteContact(event.contact)
+            is ContactEvent.UpdateContact -> updateContact(event.contact) // ✅ eksik olan satır eklendi
         }
     }
 
+    // 🔹 Rehberi yükle
     private fun loadContacts() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
@@ -47,11 +50,22 @@ class ContactsViewModel @Inject constructor(
         }
     }
 
+    // 🔹 Yeni kişi ekle
     private fun addContact(firstName: String, lastName: String, phone: String) {
         viewModelScope.launch {
             try {
-                addContactUseCase(Contact(firstName = firstName, lastName = lastName, phoneNumber = phone))
-                _uiState.update { it.copy(isContactCreated = true) }
+                val imageUri = _uiState.value.selectedImageUri?.toString()
+
+                addContactUseCase(
+                    Contact(
+                        firstName = firstName,
+                        lastName = lastName,
+                        phoneNumber = phone,
+                        profileImageUrl = imageUri
+                    )
+                )
+
+                _uiState.update { it.copy(isContactCreated = true, selectedImageUri = null) }
 
                 loadContacts()
 
@@ -64,14 +78,14 @@ class ContactsViewModel @Inject constructor(
         }
     }
 
+    // 🔹 Kişi sil
     private fun deleteContact(contact: Contact) {
         viewModelScope.launch {
             try {
                 deleteContactUseCase(contact.id)
                 loadContacts()
-                // 👇 Kullanıcıya toast mesajı göstermek için state'i güncelle
                 _uiState.update {
-                    it.copy(toastMessage = "contact_deleted_message") // sadece key veya sabit işaret
+                    it.copy(toastMessage = "contact_deleted_message")
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
@@ -79,8 +93,30 @@ class ContactsViewModel @Inject constructor(
         }
     }
 
+    // 🔹 Kişi güncelle (Edit)
+    private fun updateContact(contact: Contact) {
+        viewModelScope.launch {
+            try {
+                updateContactUseCase(contact)
+                loadContacts()
+                _uiState.update { it.copy(toastMessage = "Contact updated successfully") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    // 🔹 Toast mesajını sıfırla
     fun resetToast() {
         _uiState.update { it.copy(toastMessage = null) }
     }
 
+    // 🔹 Fotoğraf seçimi
+    fun onPhotoSelected(uri: Uri) {
+        _uiState.update { it.copy(selectedImageUri = uri) }
+    }
+
+    fun clearSelectedPhoto() {
+        _uiState.update { it.copy(selectedImageUri = null) }
+    }
 }

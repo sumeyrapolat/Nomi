@@ -45,4 +45,19 @@ class ContactRepositoryImpl(
         }
     }
 
+    override suspend fun updateContact(contact: Contact) {
+        val request = CreateUserRequest(
+            firstName = contact.firstName,
+            lastName = contact.lastName,
+            phoneNumber = contact.phoneNumber,
+            profileImageUrl = contact.profileImageUrl
+        )
+
+        val response = api.updateUser(apiKey, contact.id, request)
+
+        if (!response.isSuccessful) {
+            throw Exception("Failed to update contact: ${response.code()} ${response.message()}")
+        }
+    }
+
 }

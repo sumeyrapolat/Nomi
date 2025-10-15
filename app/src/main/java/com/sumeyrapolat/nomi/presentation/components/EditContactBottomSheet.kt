@@ -23,16 +23,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.sumeyrapolat.nomi.R
-import com.sumeyrapolat.nomi.presentation.contacts.ContactsViewModel
+import com.sumeyrapolat.nomi.domain.model.Contact
 import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
 import com.sumeyrapolat.nomi.ui.theme.Gray300
 import com.sumeyrapolat.nomi.ui.theme.Gray950
@@ -42,40 +40,42 @@ import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddNewContactBottomSheet(
+fun EditContactBottomSheet(
     isVisible: Boolean,
+    contact: Contact?,
     onDismiss: () -> Unit,
-    onSave: (String, String, String) -> Unit
+    onSave: (Contact) -> Unit
 ) {
+    if (!isVisible || contact == null) return
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
-    val viewModel: ContactsViewModel = hiltViewModel()
-    val uiState by viewModel.uiState.collectAsState()
 
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
+    var firstName by remember { mutableStateOf(contact.firstName) }
+    var lastName by remember { mutableStateOf(contact.lastName) }
+    var phone by remember { mutableStateOf(contact.phoneNumber) }
+    var photoUri by remember { mutableStateOf(contact.profileImageUrl?.let { Uri.parse(it) }) }
 
-    var showBottomSheet by remember { mutableStateOf(false) }
+    var showPhotoPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // --- 1. Kamera ve galeri launcher'ları ---
+    // --- Kamera ve galeri launcher'ları ---
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicturePreview()
     ) { bitmap ->
         bitmap?.let {
             val uri = saveBitmapToCache(context, it)
-            viewModel.onPhotoSelected(uri)
+            photoUri = uri
         }
     }
 
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        uri?.let { viewModel.onPhotoSelected(it) }
+        uri?.let { photoUri = it }
     }
 
-    // --- 2. Kamera izni launcher'ı ---
+    // --- Kamera izni launcher'ı ---
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -86,23 +86,14 @@ fun AddNewContactBottomSheet(
         }
     }
 
-    // --- 3. Bottom Sheet ---
     if (isVisible) {
-        LaunchedEffect(Unit) {
-            firstName = ""
-            lastName = ""
-            phone = ""
-            viewModel.clearSelectedPhoto()
-        }
-
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
             containerColor = BackgroundLight,
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             dragHandle = { BottomSheetDefaults.DragHandle() },
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
@@ -111,7 +102,6 @@ fun AddNewContactBottomSheet(
                     .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 // === Top Bar ===
                 Row(
                     modifier = Modifier
@@ -121,7 +111,7 @@ fun AddNewContactBottomSheet(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = stringResource(id = R.string.contact_cancel),
+                        text = "Cancel",
                         color = PrimaryBlue,
                         fontSize = 13.sp,
                         style = MaterialTheme.typography.titleSmall,
@@ -133,14 +123,14 @@ fun AddNewContactBottomSheet(
                     )
 
                     Text(
-                        text = stringResource(id = R.string.contact_new_title),
+                        text = "Edit Contact",
                         style = MaterialTheme.typography.labelLarge,
                         color = Gray950,
                         fontSize = 16.sp
                     )
 
                     Text(
-                        text = stringResource(id = R.string.contact_done),
+                        text = "Done",
                         style = MaterialTheme.typography.titleSmall,
                         fontSize = 13.sp,
                         color = if (firstName.isNotBlank() && phone.isNotBlank()) PrimaryBlue else Color.Gray,
@@ -148,7 +138,13 @@ fun AddNewContactBottomSheet(
                             enabled = firstName.isNotBlank() && phone.isNotBlank()
                         ) {
                             coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                                onSave(firstName, lastName, phone)
+                                val updated = contact.copy(
+                                    firstName = firstName,
+                                    lastName = lastName,
+                                    phoneNumber = phone,
+                                    profileImageUrl = photoUri?.toString()
+                                )
+                                onSave(updated)
                             }
                         }
                     )
@@ -156,18 +152,17 @@ fun AddNewContactBottomSheet(
 
                 Spacer(Modifier.height(8.dp))
 
-                // === Avatar ===
-                val selectedImageUri = uiState.selectedImageUri
+                // === Profil Görseli ===
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(120.dp)
                         .clip(CircleShape)
                         .background(Gray300),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (selectedImageUri != null) {
+                    if (photoUri != null) {
                         Image(
-                            painter = rememberAsyncImagePainter(selectedImageUri),
+                            painter = rememberAsyncImagePainter(photoUri),
                             contentDescription = "Selected Photo",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -176,19 +171,19 @@ fun AddNewContactBottomSheet(
                         Image(
                             painter = painterResource(id = R.drawable.ic_contact),
                             contentDescription = "Default Avatar",
-                            modifier = Modifier.size(60.dp)
+                            modifier = Modifier.size(80.dp)
                         )
                     }
                 }
 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(12.dp))
                 Text(
-                    text = stringResource(id = R.string.contact_add_photo),
+                    text = "Change Photo",
                     color = PrimaryBlue,
                     style = MaterialTheme.typography.titleMedium,
                     fontSize = 12.sp,
                     modifier = Modifier.clickable {
-                        showBottomSheet = true
+                        showPhotoPicker = true
                     }
                 )
 
@@ -198,7 +193,7 @@ fun AddNewContactBottomSheet(
                 ContactTextField(
                     value = firstName,
                     onValueChange = { firstName = it },
-                    label = stringResource(id = R.string.contact_first_name)
+                    label = "First Name"
                 )
 
                 Spacer(Modifier.height(12.dp))
@@ -206,7 +201,7 @@ fun AddNewContactBottomSheet(
                 ContactTextField(
                     value = lastName,
                     onValueChange = { lastName = it },
-                    label = stringResource(id = R.string.contact_last_name)
+                    label = "Last Name"
                 )
 
                 Spacer(Modifier.height(12.dp))
@@ -214,7 +209,7 @@ fun AddNewContactBottomSheet(
                 ContactTextField(
                     value = phone,
                     onValueChange = { phone = it },
-                    label = stringResource(id = R.string.contact_phone_number),
+                    label = "Phone Number",
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                 )
 
@@ -223,8 +218,8 @@ fun AddNewContactBottomSheet(
         }
     }
 
-    // --- 4. Fotoğraf seçici alt sheet ---
-    if (showBottomSheet) {
+    // --- Fotoğraf seçici alt sheet ---
+    if (showPhotoPicker) {
         PhotoPickerBottomSheet(
             onCameraClick = {
                 val permission = android.Manifest.permission.CAMERA
@@ -236,24 +231,15 @@ fun AddNewContactBottomSheet(
                         cameraPermissionLauncher.launch(permission)
                     }
                 }
-                showBottomSheet = false
+                showPhotoPicker = false
             },
             onGalleryClick = {
                 galleryLauncher.launch("image/*")
-                showBottomSheet = false
+                showPhotoPicker = false
             },
             onCancelClick = {
-                showBottomSheet = false
+                showPhotoPicker = false
             }
         )
     }
-}
-
-// --- Yardımcı fonksiyon ---
-fun saveBitmapToCache(context: Context, bitmap: Bitmap): Uri {
-    val file = File(context.cacheDir, "photo_${System.currentTimeMillis()}.jpg")
-    file.outputStream().use { out ->
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
-    }
-    return FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
 }

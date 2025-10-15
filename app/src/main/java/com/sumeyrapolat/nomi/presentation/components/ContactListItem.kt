@@ -17,10 +17,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.sumeyrapolat.nomi.R
+import com.sumeyrapolat.nomi.ui.theme.Blue50
+import com.sumeyrapolat.nomi.ui.theme.Blue500
 import com.sumeyrapolat.nomi.ui.theme.Gray300
 import com.sumeyrapolat.nomi.ui.theme.Gray900
 import com.sumeyrapolat.nomi.ui.theme.Gray950
 import com.sumeyrapolat.nomi.ui.theme.NomiTheme
+import com.sumeyrapolat.nomi.ui.theme.PrimaryBlue
 
 @Composable
 fun ContactListItem(
@@ -54,14 +57,14 @@ fun ContactListItem(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)),
+                    .background(Blue50),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = firstName.firstOrNull()?.uppercase() ?: "?",
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        color = PrimaryBlue
                     )
                 )
             }

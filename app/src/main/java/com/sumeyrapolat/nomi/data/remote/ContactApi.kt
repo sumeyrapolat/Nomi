@@ -25,4 +25,12 @@ interface ContactApi {
         @Header("ApiKey") apiKey: String,
         @Path("id") id: String
     ): Response<ApiResponse<Unit>>
+
+    @PUT("api/User/{id}")
+    suspend fun updateUser(
+        @Header("ApiKey") apiKey: String,
+        @Path("id") id: String,
+        @Body request: CreateUserRequest
+    ): Response<Unit>
+
 }

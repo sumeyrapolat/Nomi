@@ -14,4 +14,7 @@ sealed class ContactEvent {
 
     // Delete
     data class DeleteContact(val contact: Contact) : ContactEvent()
+
+    // ✅ Update (Edit)
+    data class UpdateContact(val contact: Contact) : ContactEvent()
 }

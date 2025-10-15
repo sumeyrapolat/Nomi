@@ -93,12 +93,11 @@ fun ContactsScreen() {
             onSaveClick = {
                 // TODO: save to phone contact (yerel rehbere kaydetme)
             },
-            onChangePhotoClick = {},
-            onEditClick = {},
+            onEditClick = { updatedContact ->
+                viewModel.onEvent(ContactEvent.UpdateContact(updatedContact)) // 👈 burada tetikleniyor!
+            },
             onDeleteConfirmed = { contact ->
-                // ✅ Silme işlemini event ile ViewModel'e gönder
                 viewModel.onEvent(ContactEvent.DeleteContact(contact))
-                selectedContact = null
             }
         )
 
