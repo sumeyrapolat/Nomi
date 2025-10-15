@@ -6,6 +6,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -13,9 +17,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.R
 import com.sumeyrapolat.nomi.ui.theme.Gray900
 import com.sumeyrapolat.nomi.ui.theme.Gray950
+import com.sumeyrapolat.nomi.ui.theme.Mulish
 import com.sumeyrapolat.nomi.ui.theme.NomiTheme
 import com.sumeyrapolat.nomi.ui.theme.PrimaryBlue
 import com.sumeyrapolat.nomi.ui.theme.Typography
@@ -24,9 +30,11 @@ import com.sumeyrapolat.nomi.ui.theme.Typography
 fun EmptyContactsState(
     onCreateClick: () -> Unit
 ) {
+    var isBottomSheetVisible by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -40,11 +48,13 @@ fun EmptyContactsState(
             text = stringResource(id = R.string.contacts_no_contacts_title),
             color = Gray950,
             style = Typography.headlineSmall,
-        )
+            fontSize = 15.sp,
+            )
         Spacer(Modifier.height(4.dp))
         Text(
             text = stringResource(id = R.string.contacts_no_contacts_subtitle),
-            style = Typography.titleMedium,
+            style = Typography.titleSmall,
+            fontSize = 12.sp,
             color = Gray900
         )
         Spacer(Modifier.height(8.dp))
@@ -52,7 +62,8 @@ fun EmptyContactsState(
             Text(
                 text = stringResource(id = R.string.contacts_create_new),
                 color = PrimaryBlue,
-                style = Typography.labelLarge,
+                style = Typography.labelSmall,
+                fontSize = 12.sp,
                 )
         }
     }

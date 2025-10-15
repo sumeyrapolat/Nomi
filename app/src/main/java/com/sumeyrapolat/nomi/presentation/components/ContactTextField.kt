@@ -10,6 +10,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.sumeyrapolat.nomi.ui.theme.BackgroundDark
 import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
 import com.sumeyrapolat.nomi.ui.theme.Gray100
 import com.sumeyrapolat.nomi.ui.theme.Gray400
@@ -26,24 +28,29 @@ fun ContactTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = {
+        modifier = modifier.fillMaxWidth(),
+        placeholder = { // 👈 yukarı kaymayan metin
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodyMedium,
+                fontSize = 12.sp,
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                 color = Gray400
             )
         },
         singleLine = true,
-        shape = RoundedCornerShape(12.dp),
-        modifier = modifier.fillMaxWidth(),
+        textStyle = MaterialTheme.typography.bodyMedium.copy(
+            fontSize = 14.sp,
+            color = Gray950
+        ),
+        shape = RoundedCornerShape(8.dp),
         keyboardOptions = keyboardOptions,
-        colors = TextFieldDefaults.colors(
+        colors = TextFieldDefaults.colors( // 👈 senin sürümde bu var
             focusedContainerColor = BackgroundLight,
             unfocusedContainerColor = BackgroundLight,
-            focusedIndicatorColor = Gray100,     // odaklanınca border
-            unfocusedIndicatorColor = Gray100,   // normalde border
+            focusedIndicatorColor = Gray950,
+            unfocusedIndicatorColor = Gray100,
             cursorColor = Gray950,
-            focusedTextColor = Gray950,
+            focusedTextColor = BackgroundDark,
             unfocusedTextColor = Gray950
         )
     )

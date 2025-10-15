@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.R
@@ -23,7 +24,6 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ToastMessage(
-    message: String,
     type: ToastType = ToastType.SUCCESS,
     durationMillis: Long = 2500L,
     onDismiss: () -> Unit
@@ -44,15 +44,15 @@ fun ToastMessage(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            contentAlignment = Alignment.Center
+                .fillMaxSize(), // 🔹 tüm ekranı kapla
+            contentAlignment = Alignment.BottomCenter // 🔹 ALTTA ORTALA
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxWidth(0.9f) // 🔹 biraz daralt (kenarlardan boşluk kalsın)
+                    .padding(bottom = 80.dp) // 🔹 navigation bar’ın üstüne taşı
                     .background(
-                        color = type.backgroundColor,
+                        color = BackgroundLight,
                         shape = RoundedCornerShape(16.dp)
                     )
                     .padding(horizontal = 16.dp, vertical = 12.dp),
@@ -65,7 +65,7 @@ fun ToastMessage(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = message,
+                    text = stringResource(id = R.string.contact_deleted_message), // 👈 sabit mesaj
                     color = type.textColor,
                     fontSize = 16.sp,
                     style = MaterialTheme.typography.bodyMedium

@@ -42,7 +42,14 @@ fun AddNewContactBottomSheet(
     var lastName by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
 
+    var showBottomSheet by remember { mutableStateOf(false) }
+
     if (isVisible) {
+        LaunchedEffect(Unit) {
+            firstName = ""
+            lastName = ""
+            phone = ""
+        }
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
@@ -71,7 +78,8 @@ fun AddNewContactBottomSheet(
                     Text(
                         text = stringResource(id = R.string.contact_cancel),
                         color = PrimaryBlue,
-                        style = MaterialTheme.typography.titleMedium,
+                        fontSize = 13.sp,
+                        style = MaterialTheme.typography.titleSmall,
                         modifier = Modifier.clickable {
                             coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
                                 onDismiss()
@@ -83,12 +91,13 @@ fun AddNewContactBottomSheet(
                         text = stringResource(id = R.string.contact_new_title),
                         style = MaterialTheme.typography.labelLarge,
                         color = Gray950,
-                        fontSize = 20.sp
+                        fontSize = 16.sp
                     )
 
                     Text(
                         text = stringResource(id = R.string.contact_done),
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontSize = 13.sp,
                         color = if (firstName.isNotBlank() && phone.isNotBlank()) PrimaryBlue else Color.Gray,
                         modifier = Modifier.clickable(
                             enabled = firstName.isNotBlank() && phone.isNotBlank()
@@ -123,7 +132,10 @@ fun AddNewContactBottomSheet(
                     text = stringResource(id = R.string.contact_add_photo),
                     color = PrimaryBlue,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.clickable { /* TODO: add photo picker */ }
+                    fontSize = 12.sp,
+                    modifier = Modifier.clickable {
+                        showBottomSheet = true
+                    }
                 )
 
                 Spacer(Modifier.height(24.dp))
@@ -152,8 +164,25 @@ fun AddNewContactBottomSheet(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                 )
 
-                Spacer(Modifier.height(280.dp))
+                Spacer(Modifier.height(180.dp))
             }
         }
     }
+
+    if (showBottomSheet) {
+        PhotoPickerBottomSheet(
+            onCameraClick = {
+                // TODO: Kamera'yı açma kodunu buraya ekleyin
+                showBottomSheet = false // İşlem seçildikten sonra sheet'i kapat
+            },
+            onGalleryClick = {
+                // TODO: Galeri'yi açma kodunu buraya ekleyin
+                showBottomSheet = false // İşlem seçildikten sonra sheet'i kapat
+            },
+            onCancelClick = {
+                showBottomSheet = false // İptale basılınca sheet'i kapat
+            }
+        )
+    }
+
 }

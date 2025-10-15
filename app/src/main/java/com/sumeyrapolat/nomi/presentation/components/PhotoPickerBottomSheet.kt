@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.R
 import com.sumeyrapolat.nomi.ui.theme.Gray950
 import com.sumeyrapolat.nomi.ui.theme.PrimaryBlue
@@ -58,6 +59,7 @@ fun PhotoPickerBottomSheet(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(id = R.string.photo_picker_camera),
+                    fontSize = 12.sp,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                 )
             }
@@ -83,6 +85,7 @@ fun PhotoPickerBottomSheet(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = stringResource(id = R.string.photo_picker_gallery),
+                    fontSize = 12.sp,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                 )
             }
@@ -94,6 +97,7 @@ fun PhotoPickerBottomSheet(
                 Text(
                     text = stringResource(id = R.string.cancel),
                     color = PrimaryBlue,
+                    fontSize = 12.sp,
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
                     textAlign = TextAlign.Center
                 )

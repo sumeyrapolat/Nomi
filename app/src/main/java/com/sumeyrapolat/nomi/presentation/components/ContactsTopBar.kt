@@ -19,14 +19,13 @@ fun ContactsTopBar(
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = stringResource(id = R.string.contacts_title),
-            style = Typography.headlineMedium,
+            style = Typography.headlineSmall,
             color = Gray950
         )
         IconButton(onClick = onAddClick) {

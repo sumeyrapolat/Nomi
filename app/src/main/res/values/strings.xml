@@ -43,4 +43,11 @@
     <string name="photo_picker_gallery">Gallery</string>
     <string name="cancel">Cancel</string>
 
+    <string name="save_to_phone_contact">Save to My Phone Contact</string>
+    <string name="contact_already_saved">This contact is already saved in your phone.</string>
+    <string name="user_added_to_phone">User is added to your phone!</string>
+
+    <string name="top_name_matches">Top Name Matches</string>
+
+
 </resources>

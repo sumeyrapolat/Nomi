@@ -1,62 +1,146 @@
 package com.sumeyrapolat.nomi.presentation.contacts
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.sumeyrapolat.nomi.presentation.base.BaseScreen
-import com.sumeyrapolat.nomi.presentation.components.ContactsTopBar
-import com.sumeyrapolat.nomi.presentation.components.EmptyContactsState
-import com.sumeyrapolat.nomi.presentation.components.SearchBar
-import com.sumeyrapolat.nomi.ui.theme.NomiTheme
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.sumeyrapolat.nomi.domain.model.Contact
+import com.sumeyrapolat.nomi.presentation.components.*
+import com.sumeyrapolat.nomi.ui.theme.Gray100
 
 @Composable
-fun ContactsScreenContent(
-    padding: PaddingValues,
-    onAddClick: () -> Unit,
-    onCreateClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(padding)
-            .padding(horizontal = 16.dp)
-    ) {
-        SearchBar(onSearch = {})
-        Spacer(Modifier.height(24.dp))
-        //TODO: burada state e göre empty ise EmptyContactsState değil ise ContactListSection kullanılacak
-        EmptyContactsState(onCreateClick = onCreateClick)
+fun ContactsScreen() {
+
+    val viewModel: ContactsViewModel = hiltViewModel()
+    val uiState by viewModel.uiState.collectAsState()
+
+    var showDeleteSheet by remember { mutableStateOf(false) }
+    var contactToDelete by remember { mutableStateOf<Contact?>(null) }
+
+    // Ekran ilk açıldığında kullanıcıları yükle
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(ContactEvent.LoadContacts)
     }
-}
 
-@Composable
-fun ContactsScreen(
-    onAddClick: () -> Unit,
-    onCreateClick: () -> Unit
-) {
-    // BaseScreen'i kullanmaya devam edin
-    BaseScreen(
-        topBar = { ContactsTopBar(onAddClick = onAddClick) }
-    ) { padding ->
-        // İçeriği burada çağırın
-        ContactsScreenContent(padding, onAddClick, onCreateClick)
-    }
-}
+    var isAddSheetVisible by remember { mutableStateOf(false) }
+    var selectedContact by remember { mutableStateOf<Contact?>(null) }
 
+    Scaffold(containerColor = Gray100) { paddingValues ->
 
-@Preview(showSystemUi = true, showBackground = true, name = "Contacts Screen (Safe Preview)")
-@Composable
-fun ContactsScreenPreview() {
-    NomiTheme {
-        // Preview için, sistem bağımlı BaseScreen yerine
-        // basit bir Scaffold kullanabiliriz (veya sadece içeriği çağırabiliriz)
-        Scaffold(
-            topBar = { ContactsTopBar(onAddClick = {}) },
-            content = { padding ->
-                ContactsScreenContent(padding, onAddClick = {}, onCreateClick = {})
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
+            // 🔹 Üst Bar
+            ContactsTopBar(onAddClick = { isAddSheetVisible = true })
+            Spacer(Modifier.height(10.dp))
+
+            // 🔹 Arama Alanı
+            SearchBar(onSearch = {})
+
+            when {
+                uiState.isLoading -> {
+                    Spacer(Modifier.height(120.dp))
+                    LoadingState()
+                }
+
+                uiState.contacts.isEmpty() -> {
+                    Spacer(Modifier.height(120.dp))
+                    EmptyContactsState(onCreateClick = { isAddSheetVisible = true })
+                }
+
+                else -> {
+                    LazyColumn {
+                        uiState.contacts
+                            .groupBy { it.firstName.firstOrNull()?.uppercaseChar() ?: '#' }
+                            .toSortedMap()
+                            .forEach { (initial, group) ->
+                                item {
+                                    ContactListSection(
+                                        initial = initial.toString(),
+                                        contacts = group,
+                                        onContactClick = { contact ->
+                                            selectedContact = contact
+                                        },
+                                        onDeleteClick = { contact ->
+                                            // 🔹 Liste üzerinden silme
+                                            contactToDelete = contact
+                                            showDeleteSheet = true
+                                        },
+                                        onEditClick = { contact ->
+                                            // 🔹 Edit için ileride kullanılacak
+                                            selectedContact = contact
+                                        }
+                                    )
+                                }
+                            }
+                    }
+                }
+            }
+        }
+
+        // 🔹 Profil (detay) bottom sheet
+        ContactDetailBottomSheet(
+            contact = selectedContact,
+            isVisible = selectedContact != null,
+            onDismiss = { selectedContact = null },
+            onSaveClick = {
+                // TODO: save to phone contact (yerel rehbere kaydetme)
+            },
+            onChangePhotoClick = {},
+            onEditClick = {},
+            onDeleteConfirmed = { contact ->
+                // ✅ Silme işlemini event ile ViewModel'e gönder
+                viewModel.onEvent(ContactEvent.DeleteContact(contact))
+                selectedContact = null
             }
         )
+
+        // 🔹 Yeni kişi ekleme bottom sheet
+        AddNewContactBottomSheet(
+            isVisible = isAddSheetVisible,
+            onDismiss = { isAddSheetVisible = false },
+            onSave = { firstName, lastName, phone ->
+                // ✅ AddContact Event’i ViewModel’e gönder
+                viewModel.onEvent(
+                    ContactEvent.AddContact(
+                        firstName = firstName,
+                        lastName = lastName,
+                        phone = phone
+                    )
+                )
+                isAddSheetVisible = false
+            }
+        )
+
+        // 🔹 Silme onay bottom sheet (liste içinden çağrıldığında)
+        DeleteContactBottomSheet(
+            isVisible = showDeleteSheet,
+            onDismiss = { showDeleteSheet = false },
+            onConfirm = {
+                contactToDelete?.let { contact ->
+                    viewModel.onEvent(ContactEvent.DeleteContact(contact))
+                    contactToDelete = null
+                }
+                showDeleteSheet = false
+            }
+        )
+
+        uiState.toastMessage?.let { message ->
+            ToastMessage(
+                type = ToastType.SUCCESS,
+                onDismiss = {
+                    viewModel.resetToast()
+                }
+            )
+        }
+
+
     }
 }

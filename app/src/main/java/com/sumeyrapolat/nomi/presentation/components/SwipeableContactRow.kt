@@ -1,6 +1,5 @@
 package com.sumeyrapolat.nomi.presentation.components
 
-
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -19,20 +18,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import com.sumeyrapolat.nomi.R
+import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
 import com.sumeyrapolat.nomi.ui.theme.DeleteRed
 import com.sumeyrapolat.nomi.ui.theme.PrimaryBlue
 
 @Composable
 fun SwipeableContactRow(
-    name: String,
+    firstName: String,
+    lastName: String,
     phoneNumber: String,
-    avatarResId: Int? = null,
+    profileImageUrl: String? = null,
     onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onContactClick: () -> Unit // 👈 EKLENDİ: kişi satırına tıklama
 ) {
     val offsetX = remember { Animatable(0f) }
     val scope = rememberCoroutineScope()
-
     val maxSwipe = 160f // iki butonun toplam genişliği
 
     Box(
@@ -40,7 +41,6 @@ fun SwipeableContactRow(
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
     ) {
-        // 🔹 Arka plan (edit + delete)
         Row(
             modifier = Modifier
                 .matchParentSize()
@@ -50,7 +50,7 @@ fun SwipeableContactRow(
         ) {
             Box(
                 modifier = Modifier
-                    .width(60.dp)
+                    .width(65.dp)
                     .fillMaxHeight()
                     .background(PrimaryBlue)
                     .clickable {
@@ -69,7 +69,7 @@ fun SwipeableContactRow(
 
             Box(
                 modifier = Modifier
-                    .width(60.dp)
+                    .width(65.dp)
                     .fillMaxHeight()
                     .background(DeleteRed)
                     .clickable {
@@ -99,7 +99,6 @@ fun SwipeableContactRow(
                             scope.launch { offsetX.snapTo(newOffset) }
                         },
                         onDragEnd = {
-                            // yarıyı geçtiyse tam aç, yoksa kapat
                             val shouldOpen = offsetX.value < -maxSwipe / 2
                             scope.launch {
                                 offsetX.animateTo(if (shouldOpen) -maxSwipe else 0f, tween(200))
@@ -107,14 +106,17 @@ fun SwipeableContactRow(
                         }
                     )
                 },
-            color = MaterialTheme.colorScheme.surface,
+            color = BackgroundLight,
             shadowElevation = 0.dp
         ) {
             ContactListItem(
-                avatarResId = avatarResId,
-                name = name,
-                phoneNumber = phoneNumber
+                firstName = firstName,
+                lastName = lastName,
+                phoneNumber = phoneNumber,
+                profileImageUrl = profileImageUrl,
+                onClick = { onContactClick() } // ✅ artık parametre tamamlandı
             )
         }
     }
 }
+
