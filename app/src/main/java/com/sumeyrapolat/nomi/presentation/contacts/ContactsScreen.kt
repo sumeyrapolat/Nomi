@@ -5,9 +5,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sumeyrapolat.nomi.domain.model.Contact
@@ -16,10 +21,6 @@ import com.sumeyrapolat.nomi.ui.theme.Gray100
 
 @Composable
 fun ContactsScreen() {
-
-    var searchQuery by remember { mutableStateOf("") }
-    var isSearchFocused by remember { mutableStateOf(false) }
-
     val viewModel: ContactsViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -29,24 +30,18 @@ fun ContactsScreen() {
     // Ekran ilk açıldığında kullanıcıları yükle
     LaunchedEffect(Unit) {
         viewModel.onEvent(ContactEvent.LoadContacts)
-        println("🔍 Güncel arama geçmişi: ${uiState.recentSearches}")
-
     }
 
     var isAddSheetVisible by remember { mutableStateOf(false) }
     var selectedContact by remember { mutableStateOf<Contact?>(null) }
 
-    val filteredContacts = remember(searchQuery, uiState.contacts) {
-        if (searchQuery.isBlank()) emptyList()
-        else uiState.contacts.filter { contact ->
-            val query = searchQuery.trim().lowercase()
-            // 👇 sadece adının ilk harfi eşleşirse göster
-            contact.firstName.firstOrNull()?.lowercaseChar() == query.firstOrNull()
-        }
-    }
-
     var isEditSheetVisible by remember { mutableStateOf(false) }
     var editingContact by remember { mutableStateOf<Contact?>(null) }
+
+    val focusManager = LocalFocusManager.current
+    val searchQuery = uiState.searchQuery
+    val isSearchFocused = uiState.searchFocused
+    val searchResults = uiState.filtered
 
 
     Scaffold(containerColor = Gray100) { paddingValues ->
@@ -57,7 +52,10 @@ fun ContactsScreen() {
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }
                 ) {
-                    if (isSearchFocused) isSearchFocused = false
+                    if (isSearchFocused) {
+                        focusManager.clearFocus()
+                        viewModel.onEvent(ContactEvent.SearchFocusChanged(false))
+                    }
                 }
         ) {
             Column(
@@ -66,33 +64,50 @@ fun ContactsScreen() {
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp)
             ) {
-                // 🔹 Üst Bar
                 ContactsTopBar(onAddClick = { isAddSheetVisible = true })
                 Spacer(Modifier.height(10.dp))
 
-                // 🔹 SearchBarArama Alanı
                 SearchBar(
-                    onSearch = { query -> searchQuery = query },
-                    onFocusClick = { isSearchFocused = true } // sadece tıklandığında aktifleşsin
+                    query = searchQuery,
+                    onQueryChange = { query ->
+                        viewModel.onEvent(ContactEvent.SearchQueryChanged(query))
+                    },
+                    onFocusChanged = { focused ->
+                        viewModel.onEvent(ContactEvent.SearchFocusChanged(focused))
+                    },
+                    onSearchAction = {
+                        viewModel.submitSearch()
+                        viewModel.onEvent(ContactEvent.SearchFocusChanged(false))
+                        focusManager.clearFocus()
+                    }
                 )
 
                 Spacer(Modifier.height(8.dp))
 
                 when {
-                    // 🔹 Arama yazılıysa sonuçları göster
                     searchQuery.isNotBlank() -> {
-                        SearchResultsSection(contacts = filteredContacts)
+                        if (searchResults.isEmpty()) {
+                            Spacer(Modifier.height(120.dp))
+                            NoResultsState()
+                        } else {
+                            SearchResultsSection(
+                                contacts = searchResults,
+                                onContactClick = { contact ->
+                                    selectedContact = contact
+                                    focusManager.clearFocus()
+                                }
+                            )
+                        }
                     }
 
-                    // 🔹 Sadece focus varsa (arama yok ama tıklanmış)
                     isSearchFocused -> {
                         RecentSearchesSection(
                             recentSearches = uiState.recentSearches,
                             onClearAll = { viewModel.onEvent(ContactEvent.SearchClearAll) },
                             onRemoveItem = { query -> viewModel.onEvent(ContactEvent.SearchRemoveHistory(query)) },
                             onSearchClick = { selected ->
-                                searchQuery = selected
-                                isSearchFocused = false
+                                viewModel.onEvent(ContactEvent.SearchHistoryClick(selected))
+                                focusManager.clearFocus()
                             }
                         )
                     }

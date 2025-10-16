@@ -1,13 +1,12 @@
 package com.sumeyrapolat.nomi.data
 
 import android.content.SharedPreferences
-import android.os.Build
-import androidx.annotation.RequiresApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 
 class RecentSearchManager(
     private val sharedPrefs: SharedPreferences
@@ -21,15 +20,14 @@ class RecentSearchManager(
     val recentSearches = _recentSearches.asStateFlow()
 
     /** Yeni bir arama ekler (tekrar varsa başa alır) */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     suspend fun add(query: String) {
-        if (query.isBlank()) return
+        val normalized = query.trim()
+        if (normalized.isEmpty()) return
         val updated = _recentSearches.value.toMutableList().apply {
-            remove(query)
-            add(0, query)
+            remove(normalized)
+            add(0, normalized)
             if (size > 10) removeLast()
         }
-        println("✅ Yeni arama eklendi: $query | Güncel liste: $updated")
         save(updated)
     }
 
@@ -48,13 +46,21 @@ class RecentSearchManager(
     private suspend fun save(list: List<String>) {
         withContext(Dispatchers.IO) {
             sharedPrefs.edit()
-                .putStringSet(KEY_SEARCHES, list.toSet())
+                .putString(KEY_SEARCHES, list.toJson())
                 .apply()
             _recentSearches.update { list }
         }
     }
 
     private fun loadSearches(): List<String> {
-        return sharedPrefs.getStringSet(KEY_SEARCHES, emptySet())?.toList() ?: emptyList()
+        val raw = sharedPrefs.getString(KEY_SEARCHES, null) ?: return emptyList()
+        return runCatching {
+            val jsonArray = JSONArray(raw)
+            List(jsonArray.length()) { index -> jsonArray.optString(index) }
+        }.getOrDefault(emptyList())
     }
+
+    private fun List<String>.toJson(): String = JSONArray().apply {
+        forEach { put(it) }
+    }.toString()
 }
