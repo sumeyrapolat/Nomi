@@ -181,6 +181,9 @@ fun ContactsScreen() {
                 onEditClick = { updatedContact ->
                     viewModel.onEvent(ContactEvent.UpdateContact(updatedContact)) // 👈 burada tetikleniyor!
                 },
+                onToastTriggered = { messageKey ->
+                    viewModel.showToast(messageKey)
+                },
                 onDeleteConfirmed = { contact ->
                     viewModel.onEvent(ContactEvent.DeleteContact(contact))
                 }
