@@ -123,18 +123,6 @@ com.sumeyrapolat.nomi
 
 ---
 
-## 🧾 Kurulum
-
-1. Repoyu klonla:  
-   ```bash
-   git clone https://github.com/<kullanıcı-adı>/Nomi.git
-   ```
-2. Android Studio ile aç.  
-3. Gerekli izinleri (READ_CONTACTS, WRITE_CONTACTS, READ_MEDIA_IMAGES) tanımla.  
-4. Uygulamayı çalıştır 🚀  
-
----
-
 ## 👩‍💻 Geliştirici
 
 **Sümeyra Polat**  
