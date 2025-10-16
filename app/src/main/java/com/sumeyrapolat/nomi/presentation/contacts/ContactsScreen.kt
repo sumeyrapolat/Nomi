@@ -19,8 +19,6 @@ fun ContactsScreen() {
 
     var searchQuery by remember { mutableStateOf("") }
     var isSearchFocused by remember { mutableStateOf(false) }
-    val recentSearches = listOf("Adam", "Jessica", "Tim") // dummy şimdilik
-
 
     val viewModel: ContactsViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
@@ -31,6 +29,8 @@ fun ContactsScreen() {
     // Ekran ilk açıldığında kullanıcıları yükle
     LaunchedEffect(Unit) {
         viewModel.onEvent(ContactEvent.LoadContacts)
+        println("🔍 Güncel arama geçmişi: ${uiState.recentSearches}")
+
     }
 
     var isAddSheetVisible by remember { mutableStateOf(false) }
@@ -87,9 +87,9 @@ fun ContactsScreen() {
                     // 🔹 Sadece focus varsa (arama yok ama tıklanmış)
                     isSearchFocused -> {
                         RecentSearchesSection(
-                            recentSearches = recentSearches,
-                            onClearAll = { /* todo */ },
-                            onRemoveItem = { /* todo */ },
+                            recentSearches = uiState.recentSearches,
+                            onClearAll = { viewModel.onEvent(ContactEvent.SearchClearAll) },
+                            onRemoveItem = { query -> viewModel.onEvent(ContactEvent.SearchRemoveHistory(query)) },
                             onSearchClick = { selected ->
                                 searchQuery = selected
                                 isSearchFocused = false

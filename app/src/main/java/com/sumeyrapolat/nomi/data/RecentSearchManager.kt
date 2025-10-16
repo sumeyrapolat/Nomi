@@ -1,46 +1,60 @@
 package com.sumeyrapolat.nomi.data
 
-import android.content.Context
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringSetPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
-import javax.inject.Singleton
+import android.content.SharedPreferences
+import android.os.Build
+import androidx.annotation.RequiresApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-private val Context.dataStore by preferencesDataStore("recent_searches")
-
-@Singleton
-class RecentSearchManager @Inject constructor(
-    private val context: Context
+class RecentSearchManager(
+    private val sharedPrefs: SharedPreferences
 ) {
-    private val KEY = stringSetPreferencesKey("recent_searches_list")
 
-    val recentSearches: Flow<List<String>> =
-        context.dataStore.data.map { it[KEY]?.toList()?.sortedBy { s -> s.lowercase() } ?: emptyList() }
-
-    suspend fun add(query: String, max: Int = 10) {
-        val clean = query.trim()
-        if (clean.isEmpty()) return
-        context.dataStore.edit { prefs ->
-            val set = (prefs[KEY] ?: emptySet()).toMutableList()
-            set.remove(clean)
-            set.add(0, clean)            // en yeni başa
-            if (set.size > max) set.removeLast()
-            prefs[KEY] = set.toSet()
-        }
+    companion object {
+        private const val KEY_SEARCHES = "recent_searches"
     }
 
+    private val _recentSearches = MutableStateFlow(loadSearches())
+    val recentSearches = _recentSearches.asStateFlow()
+
+    /** Yeni bir arama ekler (tekrar varsa başa alır) */
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+    suspend fun add(query: String) {
+        if (query.isBlank()) return
+        val updated = _recentSearches.value.toMutableList().apply {
+            remove(query)
+            add(0, query)
+            if (size > 10) removeLast()
+        }
+        println("✅ Yeni arama eklendi: $query | Güncel liste: $updated")
+        save(updated)
+    }
+
+
+    /** Belirli bir aramayı siler */
     suspend fun remove(query: String) {
-        context.dataStore.edit { prefs ->
-            val set = (prefs[KEY] ?: emptySet()).toMutableSet()
-            set.remove(query)
-            prefs[KEY] = set
+        val updated = _recentSearches.value.toMutableList().apply { remove(query) }
+        save(updated)
+    }
+
+    /** Tüm geçmişi temizler */
+    suspend fun clear() {
+        save(emptyList())
+    }
+
+    private suspend fun save(list: List<String>) {
+        withContext(Dispatchers.IO) {
+            sharedPrefs.edit()
+                .putStringSet(KEY_SEARCHES, list.toSet())
+                .apply()
+            _recentSearches.update { list }
         }
     }
 
-    suspend fun clear() {
-        context.dataStore.edit { prefs -> prefs.remove(KEY) }
+    private fun loadSearches(): List<String> {
+        return sharedPrefs.getStringSet(KEY_SEARCHES, emptySet())?.toList() ?: emptyList()
     }
 }

@@ -3,6 +3,8 @@ package com.sumeyrapolat.nomi.presentation.components
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -27,7 +29,7 @@ import com.sumeyrapolat.nomi.ui.theme.Typography
 fun SearchBar(
     modifier: Modifier = Modifier,
     onSearch: (String) -> Unit,
-    onFocusClick: () -> Unit
+    onFocusClick: () -> Unit,
 ) {
     var text by remember { mutableStateOf("") }
 
