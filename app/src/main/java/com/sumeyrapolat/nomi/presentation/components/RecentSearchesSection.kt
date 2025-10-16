@@ -13,13 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.ui.theme.BackgroundDark
 import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
 import com.sumeyrapolat.nomi.ui.theme.Gray50
 import com.sumeyrapolat.nomi.ui.theme.Gray100
 import com.sumeyrapolat.nomi.ui.theme.Gray300
-import com.sumeyrapolat.nomi.ui.theme.Gray900
-import com.sumeyrapolat.nomi.ui.theme.Gray950
 import com.sumeyrapolat.nomi.ui.theme.NomiTheme
 import com.sumeyrapolat.nomi.ui.theme.PrimaryBlue
 import com.sumeyrapolat.nomi.ui.theme.Typography
@@ -47,12 +46,14 @@ fun RecentSearchesSection(
                     text = "SEARCH HISTORY",
                     style = Typography.labelLarge.copy(
                         color = Gray300,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
                     )
                 )
                 Text(
                     text = "Clear All",
                     color = PrimaryBlue,
+                    fontSize = 12.sp,
                     style = Typography.labelLarge,
                     modifier = Modifier.clickable { onClearAll() }
                 )
@@ -105,22 +106,4 @@ fun RecentSearchesSection(
     }
 }
 
-@Preview(showBackground = true, name = "Recent Searches Preview")
-@Composable
-fun RecentSearchesSectionPreview() {
-    NomiTheme {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Gray50)
-                .padding(16.dp)
-        ) {
-            RecentSearchesSection(
-                recentSearches = listOf("Adam", "Jessica", "Tim"),
-                onClearAll = {},
-                onRemoveItem = {},
-                onSearchClick = {}
-            )
-        }
-    }
-}
+

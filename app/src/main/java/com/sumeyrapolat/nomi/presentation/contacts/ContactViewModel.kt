@@ -3,6 +3,7 @@ package com.sumeyrapolat.nomi.presentation.contacts
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sumeyrapolat.nomi.data.RecentSearchManager
 import com.sumeyrapolat.nomi.domain.model.Contact
 import com.sumeyrapolat.nomi.domain.usecase.AddContactUseCase
 import com.sumeyrapolat.nomi.domain.usecase.DeleteContactUseCase
@@ -21,20 +22,61 @@ class ContactsViewModel @Inject constructor(
     private val getContactsUseCase: GetContactsUseCase,
     private val addContactUseCase: AddContactUseCase,
     private val deleteContactUseCase: DeleteContactUseCase,
-    private val updateContactUseCase: UpdateContactUseCase
+    private val updateContactUseCase: UpdateContactUseCase,
+    private val recentSearchManager: RecentSearchManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ContactsUiState())
     val uiState = _uiState.asStateFlow()
 
-    // 👇 Event yönlendirmesi
+    init {
+        // recent searches dinle
+        viewModelScope.launch {
+            recentSearchManager.recentSearches.collect { list ->
+                _uiState.update { it.copy(recentSearches = list) }
+            }
+        }
+    }
+
     fun onEvent(event: ContactEvent) {
         when (event) {
             is ContactEvent.LoadContacts -> loadContacts()
             is ContactEvent.AddContact -> addContact(event.firstName, event.lastName, event.phone)
             is ContactEvent.DeleteContact -> deleteContact(event.contact)
-            is ContactEvent.UpdateContact -> updateContact(event.contact) // ✅ eksik olan satır eklendi
+            is ContactEvent.UpdateContact -> updateContact(event.contact)
+
+            // 🔍 Search events
+            is ContactEvent.SearchQueryChanged -> onSearchChanged(event.query)
+            is ContactEvent.SearchFocusChanged -> _uiState.update { it.copy(searchFocused = event.focused) }
+            is ContactEvent.SearchHistoryClick -> applySearchFromHistory(event.query)
+            is ContactEvent.SearchClearAll -> clearAllHistory()
+            is ContactEvent.SearchRemoveHistory -> removeFromHistory(event.query)
         }
+    }
+
+    private fun onSearchChanged(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+        // Kullanıcı yazmayı bıraktığında (IME action veya tıklama) add() çağıracağız;
+        // istersen burada da throttle ile kayıt edebilirsin.
+    }
+
+    private fun applySearchFromHistory(query: String) {
+        _uiState.update { it.copy(searchQuery = query, searchFocused = true) }
+        viewModelScope.launch { recentSearchManager.add(query) }
+    }
+
+    private fun clearAllHistory() {
+        viewModelScope.launch { recentSearchManager.clear() }
+    }
+
+    private fun removeFromHistory(q: String) {
+        viewModelScope.launch { recentSearchManager.remove(q) }
+    }
+
+    /** dışarıdan çağır: kullanıcı klavyeden "Search/Done" bastığında  */
+    fun submitSearch() {
+        val q = _uiState.value.searchQuery
+        viewModelScope.launch { recentSearchManager.add(q) }
     }
 
     // 🔹 Rehberi yükle

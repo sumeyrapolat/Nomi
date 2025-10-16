@@ -1,5 +1,7 @@
 package com.sumeyrapolat.nomi.presentation.contacts
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
@@ -15,6 +17,11 @@ import com.sumeyrapolat.nomi.ui.theme.Gray100
 @Composable
 fun ContactsScreen() {
 
+    var searchQuery by remember { mutableStateOf("") }
+    var isSearchFocused by remember { mutableStateOf(false) }
+    val recentSearches = listOf("Adam", "Jessica", "Tim") // dummy şimdilik
+
+
     val viewModel: ContactsViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsState()
 
@@ -29,7 +36,6 @@ fun ContactsScreen() {
     var isAddSheetVisible by remember { mutableStateOf(false) }
     var selectedContact by remember { mutableStateOf<Contact?>(null) }
 
-    var searchQuery by remember { mutableStateOf("") }
     val filteredContacts = remember(searchQuery, uiState.contacts) {
         if (searchQuery.isBlank()) emptyList()
         else uiState.contacts.filter { contact ->
@@ -44,140 +50,161 @@ fun ContactsScreen() {
 
 
     Scaffold(containerColor = Gray100) { paddingValues ->
-
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    if (isSearchFocused) isSearchFocused = false
+                }
         ) {
-            // 🔹 Üst Bar
-            ContactsTopBar(onAddClick = { isAddSheetVisible = true })
-            Spacer(Modifier.height(10.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 16.dp)
+            ) {
+                // 🔹 Üst Bar
+                ContactsTopBar(onAddClick = { isAddSheetVisible = true })
+                Spacer(Modifier.height(10.dp))
 
-            // 🔹 Arama Alanı
-            SearchBar(onSearch = { query -> searchQuery = query })
-            Spacer(Modifier.height(8.dp))
+                // 🔹 SearchBarArama Alanı
+                SearchBar(
+                    onSearch = { query -> searchQuery = query },
+                    onFocusClick = { isSearchFocused = true } // sadece tıklandığında aktifleşsin
+                )
 
-            when {
-                searchQuery.isNotBlank() -> {
-                    // 🔹 Arama aktifse sadece sonuç bileşeni görünsün
-                    SearchResultsSection(
-                        contacts = filteredContacts
-                    )
-                }
+                Spacer(Modifier.height(8.dp))
 
-                uiState.isLoading -> {
-                    Spacer(Modifier.height(120.dp))
-                    LoadingState()
-                }
+                when {
+                    // 🔹 Arama yazılıysa sonuçları göster
+                    searchQuery.isNotBlank() -> {
+                        SearchResultsSection(contacts = filteredContacts)
+                    }
 
-                uiState.contacts.isEmpty() -> {
-                    Spacer(Modifier.height(120.dp))
-                    EmptyContactsState(onCreateClick = { isAddSheetVisible = true })
-                }
-
-                else -> {
-                    LazyColumn {
-                        uiState.contacts
-                            .groupBy { it.firstName.firstOrNull()?.uppercaseChar() ?: '#' }
-                            .toSortedMap()
-                            .forEach { (initial, group) ->
-                                item {
-                                    ContactListSection(
-                                        initial = initial.toString(),
-                                        contacts = group,
-                                        onContactClick = { contact ->
-                                            selectedContact = contact
-                                        },
-                                        onDeleteClick = { contact ->
-                                            // 🔹 Liste üzerinden silme
-                                            contactToDelete = contact
-                                            showDeleteSheet = true
-                                        },
-                                        onEditClick = { contact ->
-                                            editingContact = contact     // 🔹 düzenlenecek kişiyi ata
-                                            isEditSheetVisible = true    // 🔹 sheet’i görünür yap
-                                        }
-
-                                    )
-                                }
+                    // 🔹 Sadece focus varsa (arama yok ama tıklanmış)
+                    isSearchFocused -> {
+                        RecentSearchesSection(
+                            recentSearches = recentSearches,
+                            onClearAll = { /* todo */ },
+                            onRemoveItem = { /* todo */ },
+                            onSearchClick = { selected ->
+                                searchQuery = selected
+                                isSearchFocused = false
                             }
+                        )
+                    }
+
+                    uiState.isLoading -> {
+                        Spacer(Modifier.height(120.dp))
+                        LoadingState()
+                    }
+
+                    uiState.contacts.isEmpty() -> {
+                        Spacer(Modifier.height(120.dp))
+                        EmptyContactsState(onCreateClick = { isAddSheetVisible = true })
+                    }
+
+                    else -> {
+                        LazyColumn {
+                            uiState.contacts
+                                .groupBy { it.firstName.firstOrNull()?.uppercaseChar() ?: '#' }
+                                .toSortedMap()
+                                .forEach { (initial, group) ->
+                                    item {
+                                        ContactListSection(
+                                            initial = initial.toString(),
+                                            contacts = group,
+                                            onContactClick = { selectedContact = it },
+                                            onDeleteClick = {
+                                                contactToDelete = it
+                                                showDeleteSheet = true
+                                            },
+                                            onEditClick = {
+                                                editingContact = it
+                                                isEditSheetVisible = true
+                                            }
+                                        )
+                                    }
+                                }
+                        }
                     }
                 }
             }
-        }
 
-        EditContactBottomSheet(
-            isVisible = isEditSheetVisible,
-            contact = editingContact,
-            onDismiss = {
-                isEditSheetVisible = false
-                editingContact = null
-            },
-            onSave = { updatedContact ->
-                viewModel.onEvent(ContactEvent.UpdateContact(updatedContact))
-                isEditSheetVisible = false
-                editingContact = null
-            }
-        )
-
-
-        // 🔹 Profil (detay) bottom sheet
-        ContactDetailBottomSheet(
-            contact = selectedContact,
-            isVisible = selectedContact != null,
-            onDismiss = { selectedContact = null },
-            onSaveClick = {
-                // TODO: save to phone contact (yerel rehbere kaydetme)
-            },
-            onEditClick = { updatedContact ->
-                viewModel.onEvent(ContactEvent.UpdateContact(updatedContact)) // 👈 burada tetikleniyor!
-            },
-            onDeleteConfirmed = { contact ->
-                viewModel.onEvent(ContactEvent.DeleteContact(contact))
-            }
-        )
-
-        // 🔹 Yeni kişi ekleme bottom sheet
-        AddNewContactBottomSheet(
-            isVisible = isAddSheetVisible,
-            onDismiss = { isAddSheetVisible = false },
-            onSave = { firstName, lastName, phone ->
-                // ✅ AddContact Event’i ViewModel’e gönder
-                viewModel.onEvent(
-                    ContactEvent.AddContact(
-                        firstName = firstName,
-                        lastName = lastName,
-                        phone = phone
-                    )
-                )
-                isAddSheetVisible = false
-            }
-        )
-
-        // 🔹 Silme onay bottom sheet (liste içinden çağrıldığında)
-        DeleteContactBottomSheet(
-            isVisible = showDeleteSheet,
-            onDismiss = { showDeleteSheet = false },
-            onConfirm = {
-                contactToDelete?.let { contact ->
-                    viewModel.onEvent(ContactEvent.DeleteContact(contact))
-                    contactToDelete = null
-                }
-                showDeleteSheet = false
-            }
-        )
-
-        uiState.toastMessage?.let { message ->
-            ToastMessage(
-                type = ToastType.SUCCESS,
+            EditContactBottomSheet(
+                isVisible = isEditSheetVisible,
+                contact = editingContact,
                 onDismiss = {
-                    viewModel.resetToast()
+                    isEditSheetVisible = false
+                    editingContact = null
+                },
+                onSave = { updatedContact ->
+                    viewModel.onEvent(ContactEvent.UpdateContact(updatedContact))
+                    isEditSheetVisible = false
+                    editingContact = null
                 }
             )
+
+
+            // 🔹 Profil (detay) bottom sheet
+            ContactDetailBottomSheet(
+                contact = selectedContact,
+                isVisible = selectedContact != null,
+                onDismiss = { selectedContact = null },
+                onSaveClick = {
+                    // TODO: save to phone contact (yerel rehbere kaydetme)
+                },
+                onEditClick = { updatedContact ->
+                    viewModel.onEvent(ContactEvent.UpdateContact(updatedContact)) // 👈 burada tetikleniyor!
+                },
+                onDeleteConfirmed = { contact ->
+                    viewModel.onEvent(ContactEvent.DeleteContact(contact))
+                }
+            )
+
+            // 🔹 Yeni kişi ekleme bottom sheet
+            AddNewContactBottomSheet(
+                isVisible = isAddSheetVisible,
+                onDismiss = { isAddSheetVisible = false },
+                onSave = { firstName, lastName, phone ->
+                    // ✅ AddContact Event’i ViewModel’e gönder
+                    viewModel.onEvent(
+                        ContactEvent.AddContact(
+                            firstName = firstName,
+                            lastName = lastName,
+                            phone = phone
+                        )
+                    )
+                    isAddSheetVisible = false
+                }
+            )
+
+            // 🔹 Silme onay bottom sheet (liste içinden çağrıldığında)
+            DeleteContactBottomSheet(
+                isVisible = showDeleteSheet,
+                onDismiss = { showDeleteSheet = false },
+                onConfirm = {
+                    contactToDelete?.let { contact ->
+                        viewModel.onEvent(ContactEvent.DeleteContact(contact))
+                        contactToDelete = null
+                    }
+                    showDeleteSheet = false
+                }
+            )
+
+            uiState.toastMessage?.let { message ->
+                ToastMessage(
+                    type = ToastType.SUCCESS,
+                    onDismiss = {
+                        viewModel.resetToast()
+                    }
+                )
+            }
+
+
         }
-
-
     }
 }
