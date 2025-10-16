@@ -43,6 +43,7 @@ fun ContactDetailBottomSheet(
     var lastName by remember { mutableStateOf(contact.lastName) }
     var phoneNumber by remember { mutableStateOf(contact.phoneNumber) }
     var profileImage by remember { mutableStateOf(contact.profileImageUrl) }
+    var isContactSaved by remember(contact.id) { mutableStateOf(contact.isSaved) }
 
     val isReadyToSave = firstName.isNotBlank() && phoneNumber.isNotBlank()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -98,6 +99,7 @@ fun ContactDetailBottomSheet(
                 )
                 saveContactToPhone(context, updatedContact)
                 onToastTriggered("contact_added_message")
+                isContactSaved = true
             }
         } else {
         }
@@ -179,6 +181,7 @@ fun ContactDetailBottomSheet(
 
             SaveToPhoneContactButton(
                 enabled = isReadyToSave,
+                isContactAlreadySaved = isContactSaved,
                 onClick = {
                     val updatedContact = contact.copy(
                         firstName = firstName,
@@ -194,6 +197,7 @@ fun ContactDetailBottomSheet(
                             coroutineScope.launch {
                                 saveContactToPhone(context, updatedContact)
                                 onToastTriggered("contact_added_message")
+                                isContactSaved = true
                             }
                         }
 
