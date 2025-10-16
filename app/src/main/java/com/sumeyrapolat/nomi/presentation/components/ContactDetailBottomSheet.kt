@@ -15,8 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.domain.model.Contact
@@ -26,7 +24,6 @@ import androidx.core.content.ContextCompat
 import com.sumeyrapolat.nomi.ui.theme.Gray950
 import com.sumeyrapolat.nomi.util.saveContactToPhone
 import kotlinx.coroutines.launch
-import com.sumeyrapolat.nomi.R
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,7 +34,7 @@ fun ContactDetailBottomSheet(
     onDismiss: () -> Unit,
     onSaveClick: (Contact) -> Unit,
     onEditClick: (Contact) -> Unit,
-    onToastTriggered: () -> Unit,
+    onToastTriggered: (String) -> Unit,
     onDeleteConfirmed: (Contact) -> Unit
 ) {
     if (!isVisible || contact == null) return
@@ -56,8 +53,6 @@ fun ContactDetailBottomSheet(
     var menuExpanded by remember { mutableStateOf(false) }
     var isEditSheetVisible by remember { mutableStateOf(false) }
     var editingContact by remember { mutableStateOf<Contact?>(null) }
-
-    var showToast by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -102,7 +97,7 @@ fun ContactDetailBottomSheet(
                     profileImageUrl = profileImage
                 )
                 saveContactToPhone(context, updatedContact)
-                showToast = true // ✅ özel toast tetikleniyor
+                onToastTriggered("contact_added_message")
             }
         } else {
         }
@@ -198,7 +193,7 @@ fun ContactDetailBottomSheet(
                         ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED -> {
                             coroutineScope.launch {
                                 saveContactToPhone(context, updatedContact)
-                                showToast = true // ✅ özel toast tetikleniyor
+                                onToastTriggered("contact_added_message")
                             }
                         }
 
@@ -260,13 +255,4 @@ fun ContactDetailBottomSheet(
             onCancelClick = { showPhotoPicker = false }
         )
     }
-    // === Custom Toast ===
-    if (showToast) {
-        ToastMessage(
-            message = stringResource(id = R.string.contact_added_message),
-            type = ToastType.SUCCESS,
-            onDismiss = { showToast = false }
-        )
-    }
-
 }

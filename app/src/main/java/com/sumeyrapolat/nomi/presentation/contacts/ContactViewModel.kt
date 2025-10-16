@@ -114,11 +114,12 @@ class ContactsViewModel @Inject constructor(
                     )
                 )
 
-                _uiState.update { it.copy(
-                    isContactCreated = true,
-                    selectedImageUri = null,
-                    toastMessage = "contact_added_message"
-                ) }
+                _uiState.update {
+                    it.copy(
+                        isContactCreated = true,
+                        selectedImageUri = null
+                    )
+                }
 
                 loadContacts()
 
@@ -162,6 +163,10 @@ class ContactsViewModel @Inject constructor(
     // 🔹 Toast mesajını sıfırla
     fun resetToast() {
         _uiState.update { it.copy(toastMessage = null) }
+    }
+
+    fun showToast(messageKey: String) {
+        _uiState.update { it.copy(toastMessage = messageKey) }
     }
 
     // 🔹 Fotoğraf seçimi
