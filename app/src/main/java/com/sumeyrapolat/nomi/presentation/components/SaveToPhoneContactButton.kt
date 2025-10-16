@@ -22,41 +22,49 @@ import com.sumeyrapolat.nomi.ui.theme.NomiTheme
 fun SaveToPhoneContactButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    isContactAlreadySaved: Boolean = false,
     onClick: () -> Unit
 ) {
-    val borderColor = if (enabled) Gray950 else Gray100
-    val contentColor = if (enabled) Gray950 else Gray100
+    val isButtonEnabled = enabled && !isContactAlreadySaved
+    val borderColor = if (isButtonEnabled) Gray950 else Gray100
+    val contentColor = if (isButtonEnabled) Gray950 else Gray100
 
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled,
-        shape = RoundedCornerShape(50),
-        border = BorderStroke(1.dp, borderColor), // 🔹 dinamik border rengi
-        colors = ButtonDefaults.outlinedButtonColors(
-            contentColor = contentColor,           // 🔹 text & icon rengi
-            disabledContentColor = Gray100,
-            containerColor = Color.Transparent
-        ),
-        modifier = modifier
-            .fillMaxWidth()
-            .height(56.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+    Column(modifier = modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = onClick,
+            enabled = isButtonEnabled,
+            shape = RoundedCornerShape(50),
+            border = BorderStroke(1.dp, borderColor), // 🔹 dinamik border rengi
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = contentColor,           // 🔹 text & icon rengi
+                disabledContentColor = Gray100,
+                containerColor = Color.Transparent
+            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_bookmark),
-                contentDescription = null,
-                tint = contentColor // 🔹 icon rengi
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = stringResource(id = R.string.save_to_phone_contact),
-                fontSize = 12.sp,
-                style = MaterialTheme.typography.titleMedium.copy(color = contentColor)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_bookmark),
+                    contentDescription = null,
+                    tint = contentColor // 🔹 icon rengi
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(id = R.string.save_to_phone_contact),
+                    fontSize = 12.sp,
+                    style = MaterialTheme.typography.titleMedium.copy(color = contentColor)
+                )
+            }
+        }
+
+        if (isContactAlreadySaved) {
+            ContactSavedInfoRow()
         }
     }
 }
