@@ -92,13 +92,13 @@ fun EditContactBottomSheet(
             sheetState = sheetState,
             containerColor = BackgroundLight,
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            dragHandle = { BottomSheetDefaults.DragHandle() },
+            dragHandle = null,
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
                     .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -155,7 +155,7 @@ fun EditContactBottomSheet(
                 // === Profil Görseli ===
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
+                        .size(96.dp)
                         .clip(CircleShape)
                         .background(Gray300),
                     contentAlignment = Alignment.Center
@@ -213,7 +213,7 @@ fun EditContactBottomSheet(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                 )
 
-                Spacer(Modifier.height(360.dp))
+                Spacer(modifier = Modifier.height(150.dp))
             }
         }
     }

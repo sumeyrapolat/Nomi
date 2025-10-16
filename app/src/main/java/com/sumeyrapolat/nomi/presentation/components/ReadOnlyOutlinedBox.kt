@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
 import com.sumeyrapolat.nomi.ui.theme.Gray300
 import com.sumeyrapolat.nomi.ui.theme.Gray950
@@ -30,7 +31,7 @@ fun ReadOnlyOutlinedBox(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
+            .height(50.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(BackgroundLight)
             .border(
@@ -43,6 +44,7 @@ fun ReadOnlyOutlinedBox(
     ) {
         Text(
             text = value,
+            fontSize = 12.sp,
             style = MaterialTheme.typography.bodyLarge.copy(color = Gray950)
         )
     }

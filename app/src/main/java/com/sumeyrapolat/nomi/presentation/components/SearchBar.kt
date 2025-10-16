@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.R
+import com.sumeyrapolat.nomi.ui.theme.BackgroundDark
 import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
 import com.sumeyrapolat.nomi.ui.theme.Gray300
 import com.sumeyrapolat.nomi.ui.theme.NomiTheme
@@ -60,7 +61,7 @@ fun SearchBar(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             cursorColor = MaterialTheme.colorScheme.primary,
-            focusedTextColor = MaterialTheme.colorScheme.onBackground, // ✅ görünür metin
+            focusedTextColor = BackgroundDark, // ✅ görünür metin
             unfocusedTextColor = MaterialTheme.colorScheme.onBackground, // ✅ görünür metin
         ),
         modifier = modifier

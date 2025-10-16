@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -24,50 +25,63 @@ fun SearchResultsSection(
     title: String = stringResource(id = R.string.top_name_matches),
     contacts: List<Contact>
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = BackgroundLight
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+    if (contacts.isEmpty()) {
+        // 🔹 Hiç sonuç yoksa "NoResultsState" göster
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.TopCenter // 👈 tam ortaya hizalar
+        ) {
+            NoResultsState()
+        }
 
-            // 🔹 Bölüm başlığı
-            Text(
-                text = title.uppercase(),
-                style = Typography.titleMedium.copy(
+    } else {
+        // 🔹 Sonuç varsa listeyi göster
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 10.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = BackgroundLight
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+
+                // 🔹 Bölüm başlığı
+                Text(
+                    text = title.uppercase(),
+                    style = Typography.titleMedium.copy(
+                        color = Gray300,
+                    ),
                     color = Gray300,
-                ),
-                color = Gray300,
-                modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 8.dp)
-            )
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 10.dp),
-                thickness = DividerDefaults.Thickness,
-                color = Gray50
-            )
-
-            // 🔹 Arama sonucu kişi listesi
-            contacts.forEachIndexed { index, contact ->
-
-                ContactListItem(
-                    firstName = contact.firstName,
-                    lastName = contact.lastName,
-                    phoneNumber = contact.phoneNumber,
-                    profileImageUrl = contact.profileImageUrl,
-                    onClick = {}
-
+                    modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 8.dp)
                 )
-                if (index < contacts.size - 1) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 10.dp),
-                        thickness = DividerDefaults.Thickness,
-                        color = Gray50
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 10.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = Gray50
+                )
+
+                // 🔹 Arama sonucu kişi listesi
+                contacts.forEachIndexed { index, contact ->
+
+                    ContactListItem(
+                        firstName = contact.firstName,
+                        lastName = contact.lastName,
+                        phoneNumber = contact.phoneNumber,
+                        profileImageUrl = contact.profileImageUrl,
+                        onClick = {}
                     )
+
+                    if (index < contacts.size - 1) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 10.dp),
+                            thickness = DividerDefaults.Thickness,
+                            color = Gray50
+                        )
+                    }
                 }
             }
         }

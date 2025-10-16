@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.palette.ktx)
     testImplementation(libs.junit)
     // WorkManager test libraries
     testImplementation("androidx.work:work-testing:2.9.0")

@@ -8,8 +8,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.R
 import com.sumeyrapolat.nomi.ui.theme.Gray900
 import com.sumeyrapolat.nomi.ui.theme.Gray950
@@ -19,12 +21,10 @@ import com.sumeyrapolat.nomi.ui.theme.Typography
 @Composable
 fun NoResultsState() {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Spacer(modifier = Modifier.height(30.dp))
         Image(
             painter = painterResource(id = R.drawable.ic_close), // 🔍 ya da uygun bir “no results” icon
             contentDescription = null,
@@ -34,12 +34,15 @@ fun NoResultsState() {
         Text(
             text = stringResource(id = R.string.contacts_no_results_title),
             color = Gray950,
+            fontSize = 14.sp,
             style = Typography.headlineSmall
         )
         Spacer(Modifier.height(6.dp))
         Text(
             text = stringResource(id = R.string.contacts_no_results_subtitle),
             style = Typography.titleMedium,
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center,
             color = Gray900
         )
     }

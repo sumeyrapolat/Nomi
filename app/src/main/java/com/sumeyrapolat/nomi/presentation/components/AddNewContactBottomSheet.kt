@@ -100,14 +100,14 @@ fun AddNewContactBottomSheet(
             sheetState = sheetState,
             containerColor = BackgroundLight,
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
-            dragHandle = { BottomSheetDefaults.DragHandle() },
+            dragHandle = null,
             modifier = Modifier
                 .fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp)
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
                     .navigationBarsPadding(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -192,7 +192,7 @@ fun AddNewContactBottomSheet(
                     }
                 )
 
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(32.dp))
 
                 // === Text Fields ===
                 ContactTextField(
@@ -218,12 +218,11 @@ fun AddNewContactBottomSheet(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
                 )
 
-                Spacer(Modifier.height(360.dp))
+                Spacer(modifier = Modifier.height(150.dp))
             }
         }
     }
 
-    // --- 4. Fotoğraf seçici alt sheet ---
     if (showBottomSheet) {
         PhotoPickerBottomSheet(
             onCameraClick = {

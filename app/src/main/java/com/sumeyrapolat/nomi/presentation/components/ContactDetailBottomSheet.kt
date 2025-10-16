@@ -1,17 +1,11 @@
 package com.sumeyrapolat.nomi.presentation.components
 
-import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -19,23 +13,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
-import com.sumeyrapolat.nomi.R
+import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.domain.model.Contact
 import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
-import com.sumeyrapolat.nomi.ui.theme.Gray950
 import com.sumeyrapolat.nomi.ui.theme.PrimaryBlue
-import kotlinx.coroutines.launch
 import androidx.core.content.ContextCompat
-import androidx.core.content.FileProvider
-import java.io.File
+import com.sumeyrapolat.nomi.ui.theme.Gray950
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,7 +80,6 @@ fun ContactDetailBottomSheet(
             Toast.makeText(context, "Camera permission is required", Toast.LENGTH_SHORT).show()
         }
     }
-
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -101,8 +87,9 @@ fun ContactDetailBottomSheet(
         scrimColor = Color.Black.copy(alpha = 0.6f),
         shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
         dragHandle = null,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+        modifier = Modifier
+            .fillMaxWidth()
+    ){
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -121,7 +108,7 @@ fun ContactDetailBottomSheet(
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = "Menu",
-                        tint = Color.Gray
+                        tint = Gray950
                     )
                 }
                 ContactMenu(
@@ -140,26 +127,7 @@ fun ContactDetailBottomSheet(
             }
 
             // === Profil Görseli ===
-            if (!profileImage.isNullOrBlank()) {
-                Image(
-                    painter = rememberAsyncImagePainter(profileImage),
-                    contentDescription = "Profile Image",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                )
-            } else {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_contact),
-                    contentDescription = "Default Profile Image",
-                    modifier = Modifier
-                        .size(120.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE0E0E0)),
-                    contentScale = ContentScale.Crop
-                )
-            }
+            ProfileImageWithDiffuseGlow(imageUrl = profileImage)
 
             Spacer(Modifier.height(12.dp))
 
@@ -167,7 +135,8 @@ fun ContactDetailBottomSheet(
             Text(
                 text = "Change Photo",
                 color = PrimaryBlue,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                fontSize = 14.sp,
+                style = MaterialTheme.typography.labelMedium,
                 modifier = Modifier.clickable { showPhotoPicker = true } // 👈 alt sheet açılır
             )
 
@@ -180,7 +149,8 @@ fun ContactDetailBottomSheet(
             Spacer(Modifier.height(16.dp))
             ReadOnlyOutlinedBox(label = "Phone Number", value = phoneNumber)
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(50.dp))
+
 
             SaveToPhoneContactButton(
                 enabled = isReadyToSave,
@@ -194,8 +164,9 @@ fun ContactDetailBottomSheet(
                     onSaveClick(updatedContact)
                 }
             )
+            Spacer(Modifier.height(30.dp))
 
-            Spacer(Modifier.height(250.dp))
+
         }
 
         // === Delete Confirm Sheet ===

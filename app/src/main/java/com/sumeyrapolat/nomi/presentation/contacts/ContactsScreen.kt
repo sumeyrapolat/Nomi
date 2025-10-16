@@ -29,6 +29,20 @@ fun ContactsScreen() {
     var isAddSheetVisible by remember { mutableStateOf(false) }
     var selectedContact by remember { mutableStateOf<Contact?>(null) }
 
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredContacts = remember(searchQuery, uiState.contacts) {
+        if (searchQuery.isBlank()) emptyList()
+        else uiState.contacts.filter { contact ->
+            val query = searchQuery.trim().lowercase()
+            // 👇 sadece adının ilk harfi eşleşirse göster
+            contact.firstName.firstOrNull()?.lowercaseChar() == query.firstOrNull()
+        }
+    }
+
+    var isEditSheetVisible by remember { mutableStateOf(false) }
+    var editingContact by remember { mutableStateOf<Contact?>(null) }
+
+
     Scaffold(containerColor = Gray100) { paddingValues ->
 
         Column(
@@ -42,9 +56,17 @@ fun ContactsScreen() {
             Spacer(Modifier.height(10.dp))
 
             // 🔹 Arama Alanı
-            SearchBar(onSearch = {})
+            SearchBar(onSearch = { query -> searchQuery = query })
+            Spacer(Modifier.height(8.dp))
 
             when {
+                searchQuery.isNotBlank() -> {
+                    // 🔹 Arama aktifse sadece sonuç bileşeni görünsün
+                    SearchResultsSection(
+                        contacts = filteredContacts
+                    )
+                }
+
                 uiState.isLoading -> {
                     Spacer(Modifier.height(120.dp))
                     LoadingState()
@@ -74,9 +96,10 @@ fun ContactsScreen() {
                                             showDeleteSheet = true
                                         },
                                         onEditClick = { contact ->
-                                            // 🔹 Edit için ileride kullanılacak
-                                            selectedContact = contact
+                                            editingContact = contact     // 🔹 düzenlenecek kişiyi ata
+                                            isEditSheetVisible = true    // 🔹 sheet’i görünür yap
                                         }
+
                                     )
                                 }
                             }
@@ -84,6 +107,21 @@ fun ContactsScreen() {
                 }
             }
         }
+
+        EditContactBottomSheet(
+            isVisible = isEditSheetVisible,
+            contact = editingContact,
+            onDismiss = {
+                isEditSheetVisible = false
+                editingContact = null
+            },
+            onSave = { updatedContact ->
+                viewModel.onEvent(ContactEvent.UpdateContact(updatedContact))
+                isEditSheetVisible = false
+                editingContact = null
+            }
+        )
+
 
         // 🔹 Profil (detay) bottom sheet
         ContactDetailBottomSheet(
