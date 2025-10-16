@@ -1,6 +1,5 @@
 package com.sumeyrapolat.nomi.presentation.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.sumeyrapolat.nomi.ui.theme.BackgroundDark
 import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
-import com.sumeyrapolat.nomi.ui.theme.Gray50
 import com.sumeyrapolat.nomi.ui.theme.Gray100
 import com.sumeyrapolat.nomi.ui.theme.Gray300
 import com.sumeyrapolat.nomi.ui.theme.NomiTheme
@@ -66,9 +64,11 @@ fun RecentSearchesSection(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = BackgroundLight),
-                ) {
-                Column(modifier = Modifier.fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 4.dp),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
                 ) {
                     recentSearches.forEachIndexed { index, query ->
                         Row(

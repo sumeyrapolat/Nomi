@@ -1,13 +1,10 @@
 package com.sumeyrapolat.nomi.presentation.contacts
 
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sumeyrapolat.nomi.data.RecentSearchManager
 import com.sumeyrapolat.nomi.domain.model.Contact
-import com.sumeyrapolat.nomi.domain.repository.RecentSearchesRepository
 import com.sumeyrapolat.nomi.domain.usecase.AddContactUseCase
 import com.sumeyrapolat.nomi.domain.usecase.DeleteContactUseCase
 import com.sumeyrapolat.nomi.domain.usecase.GetContactsUseCase
@@ -26,17 +23,12 @@ class ContactsViewModel @Inject constructor(
     private val addContactUseCase: AddContactUseCase,
     private val deleteContactUseCase: DeleteContactUseCase,
     private val updateContactUseCase: UpdateContactUseCase,
-    private val recentSearchManager: RecentSearchManager,
-    private val recentRepo: RecentSearchesRepository
+    private val recentSearchManager: RecentSearchManager
 
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ContactsUiState())
     val uiState = _uiState.asStateFlow()
-
-    private val _recentSearches = MutableStateFlow<List<String>>(emptyList())
-    val recentSearches = _recentSearches.asStateFlow()
-
 
     init {
         // recent searches dinle
@@ -71,7 +63,7 @@ class ContactsViewModel @Inject constructor(
     }
 
     private fun applySearchFromHistory(query: String) {
-        _uiState.update { it.copy(searchQuery = query, searchFocused = true) }
+        _uiState.update { it.copy(searchQuery = query, searchFocused = false) }
         viewModelScope.launch { recentSearchManager.add(query) }
     }
 
@@ -84,7 +76,6 @@ class ContactsViewModel @Inject constructor(
     }
 
     /** dışarıdan çağır: kullanıcı klavyeden "Search/Done" bastığında  */
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun submitSearch() {
         val q = _uiState.value.searchQuery
         viewModelScope.launch { recentSearchManager.add(q) }

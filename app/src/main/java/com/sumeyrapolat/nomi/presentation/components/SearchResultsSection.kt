@@ -23,7 +23,8 @@ import com.sumeyrapolat.nomi.ui.theme.Typography
 @Composable
 fun SearchResultsSection(
     title: String = stringResource(id = R.string.top_name_matches),
-    contacts: List<Contact>
+    contacts: List<Contact>,
+    onContactClick: (Contact) -> Unit,
 ) {
     if (contacts.isEmpty()) {
         // 🔹 Hiç sonuç yoksa "NoResultsState" göster
@@ -72,7 +73,7 @@ fun SearchResultsSection(
                         lastName = contact.lastName,
                         phoneNumber = contact.phoneNumber,
                         profileImageUrl = contact.profileImageUrl,
-                        onClick = {}
+                        onClick = { onContactClick(contact) }
                     )
 
                     if (index < contacts.size - 1) {
