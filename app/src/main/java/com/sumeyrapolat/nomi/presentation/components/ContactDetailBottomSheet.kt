@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,6 +24,10 @@ import com.sumeyrapolat.nomi.ui.theme.BackgroundLight
 import com.sumeyrapolat.nomi.ui.theme.PrimaryBlue
 import androidx.core.content.ContextCompat
 import com.sumeyrapolat.nomi.ui.theme.Gray950
+import com.sumeyrapolat.nomi.util.saveContactToPhone
+import kotlinx.coroutines.launch
+import com.sumeyrapolat.nomi.R
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -32,6 +37,7 @@ fun ContactDetailBottomSheet(
     onDismiss: () -> Unit,
     onSaveClick: (Contact) -> Unit,
     onEditClick: (Contact) -> Unit,
+    onToastTriggered: () -> Unit,
     onDeleteConfirmed: (Contact) -> Unit
 ) {
     if (!isVisible || contact == null) return
@@ -50,6 +56,8 @@ fun ContactDetailBottomSheet(
     var menuExpanded by remember { mutableStateOf(false) }
     var isEditSheetVisible by remember { mutableStateOf(false) }
     var editingContact by remember { mutableStateOf<Contact?>(null) }
+
+    var showToast by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -70,6 +78,7 @@ fun ContactDetailBottomSheet(
         uri?.let { profileImage = it.toString() }
     }
 
+
     // --- Kamera izni ---
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -80,6 +89,27 @@ fun ContactDetailBottomSheet(
             Toast.makeText(context, "Camera permission is required", Toast.LENGTH_SHORT).show()
         }
     }
+
+    val contactPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            coroutineScope.launch {
+                val updatedContact = contact.copy(
+                    firstName = firstName,
+                    lastName = lastName,
+                    phoneNumber = phoneNumber,
+                    profileImageUrl = profileImage
+                )
+                saveContactToPhone(context, updatedContact)
+                showToast = true // ✅ özel toast tetikleniyor
+            }
+        } else {
+        }
+    }
+
+
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -161,9 +191,26 @@ fun ContactDetailBottomSheet(
                         phoneNumber = phoneNumber,
                         profileImageUrl = profileImage
                     )
+
+                    val permission = android.Manifest.permission.WRITE_CONTACTS
+                    when {
+                        // ✅ Eğer izin zaten varsa:
+                        ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED -> {
+                            coroutineScope.launch {
+                                saveContactToPhone(context, updatedContact)
+                                showToast = true // ✅ özel toast tetikleniyor
+                            }
+                        }
+
+                        // ✅ Eğer izin yoksa, iste:
+                        else -> contactPermissionLauncher.launch(permission)
+                    }
+
+                    // 🔹 App içinde kaydetme işlemi (örneğin veritabanına)
                     onSaveClick(updatedContact)
                 }
             )
+
             Spacer(Modifier.height(30.dp))
 
 
@@ -213,4 +260,13 @@ fun ContactDetailBottomSheet(
             onCancelClick = { showPhotoPicker = false }
         )
     }
+    // === Custom Toast ===
+    if (showToast) {
+        ToastMessage(
+            message = stringResource(id = R.string.contact_added_message),
+            type = ToastType.SUCCESS,
+            onDismiss = { showToast = false }
+        )
+    }
+
 }

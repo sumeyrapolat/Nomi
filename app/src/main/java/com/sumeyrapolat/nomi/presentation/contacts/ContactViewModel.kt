@@ -1,6 +1,8 @@
 package com.sumeyrapolat.nomi.presentation.contacts
 
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sumeyrapolat.nomi.data.RecentSearchManager
@@ -40,6 +42,7 @@ class ContactsViewModel @Inject constructor(
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun onEvent(event: ContactEvent) {
         when (event) {
             is ContactEvent.LoadContacts -> loadContacts()
@@ -62,6 +65,7 @@ class ContactsViewModel @Inject constructor(
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private fun applySearchFromHistory(query: String) {
         _uiState.update { it.copy(searchQuery = query, searchFocused = false) }
         viewModelScope.launch { recentSearchManager.add(query) }
@@ -76,6 +80,7 @@ class ContactsViewModel @Inject constructor(
     }
 
     /** dışarıdan çağır: kullanıcı klavyeden "Search/Done" bastığında  */
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun submitSearch() {
         val q = _uiState.value.searchQuery
         viewModelScope.launch { recentSearchManager.add(q) }
@@ -109,7 +114,11 @@ class ContactsViewModel @Inject constructor(
                     )
                 )
 
-                _uiState.update { it.copy(isContactCreated = true, selectedImageUri = null) }
+                _uiState.update { it.copy(
+                    isContactCreated = true,
+                    selectedImageUri = null,
+                    toastMessage = "contact_added_message"
+                ) }
 
                 loadContacts()
 
@@ -143,7 +152,7 @@ class ContactsViewModel @Inject constructor(
             try {
                 updateContactUseCase(contact)
                 loadContacts()
-                _uiState.update { it.copy(toastMessage = "Contact updated successfully") }
+                _uiState.update { it.copy(toastMessage = "contact_updated_message") }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }

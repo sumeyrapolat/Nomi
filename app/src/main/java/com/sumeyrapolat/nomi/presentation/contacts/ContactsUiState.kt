@@ -14,7 +14,10 @@ data class ContactsUiState(
     // 🔍 search
     val searchQuery: String = "",
     val searchFocused: Boolean = false,
-    val recentSearches: List<String> = emptyList()
+    val recentSearches: List<String> = emptyList(),
+
+    val toastMessageResId: Int? = null   // ← eklendi
+
 ) {
     // filtreleme (ad + soyad birlikte arama, boşluk destekli)
     val filtered: List<Contact>

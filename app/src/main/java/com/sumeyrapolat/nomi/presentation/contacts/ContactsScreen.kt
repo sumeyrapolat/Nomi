@@ -1,5 +1,7 @@
 package com.sumeyrapolat.nomi.presentation.contacts
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -11,14 +13,19 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.sumeyrapolat.nomi.domain.model.Contact
 import com.sumeyrapolat.nomi.presentation.components.*
 import com.sumeyrapolat.nomi.ui.theme.Gray100
+import com.sumeyrapolat.nomi.R
 
+
+@RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
 fun ContactsScreen() {
     val viewModel: ContactsViewModel = hiltViewModel()
@@ -42,7 +49,6 @@ fun ContactsScreen() {
     val searchQuery = uiState.searchQuery
     val isSearchFocused = uiState.searchFocused
     val searchResults = uiState.filtered
-
 
     Scaffold(containerColor = Gray100) { paddingValues ->
         Box(
@@ -210,14 +216,23 @@ fun ContactsScreen() {
                 }
             )
 
-            uiState.toastMessage?.let { message ->
-                ToastMessage(
-                    type = ToastType.SUCCESS,
-                    onDismiss = {
-                        viewModel.resetToast()
-                    }
-                )
+            uiState.toastMessage?.let { messageKey ->
+                val messageText = when (messageKey) {
+                    "contact_added_message" -> stringResource(id = R.string.contact_added_message)
+                    "contact_updated_message" -> stringResource(id = R.string.contact_updated_message)
+                    "contact_deleted_message" -> stringResource(id = R.string.contact_deleted_message)
+                    else -> null
+                }
+
+                messageText?.let {
+                    ToastMessage(
+                        message = it,
+                        type = ToastType.SUCCESS,
+                        onDismiss = { viewModel.resetToast() }
+                    )
+                }
             }
+
 
 
         }

@@ -61,18 +61,3 @@ fun SaveToPhoneContactButton(
     }
 }
 
-@Preview(showBackground = true, name = "Save Contact Button - Enabled")
-@Composable
-fun SaveToPhoneContactButtonPreview() {
-    NomiTheme {
-        SaveToPhoneContactButton(onClick = {})
-    }
-}
-
-@Preview(showBackground = true, name = "Save Contact Button - Disabled")
-@Composable
-fun SaveToPhoneContactButtonDisabledPreview() {
-    NomiTheme {
-        SaveToPhoneContactButton(enabled = false, onClick = {})
-    }
-}

@@ -21,6 +21,7 @@ import com.sumeyrapolat.nomi.ui.theme.Typography
 @Composable
 fun NoResultsState() {
     Column(
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -34,14 +35,12 @@ fun NoResultsState() {
         Text(
             text = stringResource(id = R.string.contacts_no_results_title),
             color = Gray950,
-            fontSize = 14.sp,
             style = Typography.headlineSmall
         )
         Spacer(Modifier.height(6.dp))
         Text(
             text = stringResource(id = R.string.contacts_no_results_subtitle),
             style = Typography.titleMedium,
-            fontSize = 12.sp,
             textAlign = TextAlign.Center,
             color = Gray900
         )
